@@ -1,0 +1,47 @@
+{
+  "name": "bob-router",
+  "version": "0.0.0",
+  "description": "Smallish client-side router based on Vuex.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stephank/bob-router.git"
+  },
+  "keywords": [
+    "vue",
+    "vuex",
+    "router"
+  ],
+  "author": "Stéphan Kochen <stephan@kochen.nl>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stephank/bob-router/issues"
+  },
+  "homepage": "https://github.com/stephank/bob-router#readme",
+  "dependencies": {
+    "bluebird": "^3.4.6",
+    "path-to-regexp": "^1.7.0"
+  },
+  "peerDependencies": {
+    "vuex": "^2.0.0"
+  },
+  "eslintConfig": {
+    "extends": "eslint:recommended",
+    "parserOptions": {
+      "sourceType": "module"
+    },
+    "env": {
+      "es6": true,
+      "browser": true
+    },
+    "rules": {
+      "strict": 2,
+      "no-var": 2,
+      "prefer-arrow-callback": 2,
+      "prefer-const": 2,
+      "prefer-numeric-literals": 2,
+      "prefer-rest-params": 2,
+      "prefer-spread": 2
+    }
+  }
+}
