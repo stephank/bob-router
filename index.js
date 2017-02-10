@@ -3,7 +3,9 @@ import pathToRegexp from 'path-to-regexp';
 
 export class Router {
     constructor() {
-        this.base = '';
+        this.basePath = '';
+        this.parentRouter = null;
+        this.storeModule = null;
         this.routes = [];
     }
 
@@ -78,16 +80,16 @@ export class Router {
         while (path[--idx] === '/') {};
         path = path.slice(0, idx + 1);
         // Build child base path.
-        const base = this.base + path;
+        const basePath = this.basePath + path;
         // Build path we actually match on.
         path += '/*';
 
         // Create child router.
         const RouterClass = this.constructor;
         const child = new RouterClass();
-        child.base = base;
-        child.parent = this;
-        child.module = this.module;
+        child.basePath = basePath;
+        child.parentRouter = this;
+        child.storeModule = this.storeModule;
 
         // Add route to parent, delegating to child.
         this.add(path, ...steps, (store, params) => {
@@ -170,7 +172,7 @@ export default (router=new Router()) => {
     router.post = () => {};
 
     // Export a Vuex module.
-    router.module = { state, getters, mutations, actions };
+    router.storeModule = { state, getters, mutations, actions };
 
     // Update using the current location.hash.
     router.update = ({ dispatch }) => {
