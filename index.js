@@ -147,7 +147,13 @@ export default (router=new Router()) => {
             // Match and execute the route.
             commit('navigating');
             return router.exec({ state: rootState, dispatch, commit}, path)
-                .then((params) => {
+                .tap((params) => {
+                    return router.post(params);
+                })
+                .catch((error) => {
+                    params.error = error;
+                })
+                .tap((params) => {
                     // Check if we're still current.
                     if (currentHandle === handle) {
                         // Normalize location.hash.
@@ -156,10 +162,12 @@ export default (router=new Router()) => {
                         // Commit the change.
                         commit('navigated', { path, params });
                     }
-                    return params;
                 });
         },
     };
+
+    // Post-routing (pre-navigation) hook.
+    router.post = () => {};
 
     // Export a Vuex module.
     router.module = { state, getters, mutations, actions };
