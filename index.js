@@ -150,10 +150,10 @@ export default (router=new Router()) => {
             commit('navigating');
             return router.exec({ state: rootState, dispatch, commit}, path)
                 .tap((params) => {
-                    return router.post(params);
-                })
-                .catch((error) => {
-                    params.error = error;
+                    return router.post(params)
+                        .catch((error) => {
+                            params.error = error;
+                        });
                 })
                 .tap((params) => {
                     // Check if we're still current.
