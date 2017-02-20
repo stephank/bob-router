@@ -1,9 +1,30 @@
 import Promise from 'bluebird';
 import pathToRegexp from 'path-to-regexp';
 
+const normalizePath = (path) => {
+    return path.replace(/\/+$/, '');
+};
+
+export class Route {
+    constructor(basePath, path, steps) {
+        this.path = path;
+        this.re = pathToRegexp(this.path);
+        this.steps = steps;
+        this._url = pathToRegexp.compile(basePath + this.path);
+    }
+
+    // Generate a URL for this route and the given parameters.
+    //
+    // The URL will be a full URL, accounting for all parent routers.
+    url(params) {
+        return '#' + this._url(params);
+    }
+}
+
 export class Router {
     constructor() {
         this.basePath = '';
+        this.baseRoute = null;
         this.parentRouter = null;
         this.storeModule = null;
         this.routes = [];
@@ -17,9 +38,17 @@ export class Router {
     // return (a promise for) defaults. They receive the match params object as
     // payload.
     add(path, ...steps) {
-        const re = pathToRegexp(path);
-        this.routes.push({ path, steps, re });
-        return this;
+        const route = new Route(this.basePath, path, steps);
+        this.routes.push(route);
+        return route;
+    }
+
+    // Generate a URL for a path and params. Also available on `Route` objects.
+    //
+    // The URL will be a full URL, accounting for all parent routers.
+    url(path, params) {
+        const fn = pathToRegexp.compile(this.basePath + path);
+        return '#' + fn(params);
     }
 
     // Match the path to one of the routes.
@@ -75,24 +104,16 @@ export class Router {
     // Any additional arguments are intermediate steps to run, before
     // delegating to the child router. Returns a new Router instance.
     child(path, ...steps) {
-        // Strip trailing slashes.
-        let idx = path.length;
-        while (path[--idx] === '/') { /* no-op */ }
-        path = path.slice(0, idx + 1);
-        // Build child base path.
-        const basePath = this.basePath + path;
-        // Build path we actually match on.
-        path += '/*';
+        path = normalizePath(path);
 
-        // Create child router.
         const RouterClass = this.constructor;
         const child = new RouterClass();
-        child.basePath = basePath;
+        child.basePath = normalizePath(this.basePath) + path;
+        child.baseRoute = this.add(`${path}/*`, ...steps);
         child.parentRouter = this;
         child.storeModule = this.storeModule;
 
-        // Add route to parent, delegating to child.
-        this.add(path, ...steps, (store, params) => {
+        child.baseRoute.steps.push((store, params) => {
             const restIdx = --params.length;
             const path = '/' + params[restIdx];
             delete params[restIdx];
@@ -153,7 +174,7 @@ export default (router=new Router()) => {
                     return router.post(params)
                         .catch((error) => {
                             params.error = error;
-                        });
+                        })
                 })
                 .tap((params) => {
                     // Check if we're still current.
