@@ -77,7 +77,7 @@ export class Router {
     child(path, ...steps) {
         // Strip trailing slashes.
         let idx = path.length;
-        while (path[--idx] === '/') {};
+        while (path[--idx] === '/') { /* no-op */ }
         path = path.slice(0, idx + 1);
         // Build child base path.
         const basePath = this.basePath + path;
